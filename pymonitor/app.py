@@ -2,7 +2,7 @@ from tornado import web, ioloop
 from tornado.options import options, define
 import tornado
 
-from sse import AsyncioSSEHandler
+from sse import AsyncioSSEHandler, SSEDataSource, DiskDataSource
 import asyncio
 
 define("port", default="1337", help="The server port")
@@ -12,7 +12,8 @@ define("static_path", default="../website", help="Static file location (root)")
 
 def make_app():
     routes = [
-        (r"^/api/cpu$", AsyncioSSEHandler),
+        (r"^/api/cpu$", AsyncioSSEHandler, {'datasource': SSEDataSource}),
+        (r"^/api/disks$", AsyncioSSEHandler, {'datasource': DiskDataSource}),
         (r"^/(.*)$", web.StaticFileHandler, {'path': options.static_path, "default_filename": "index.html"}),
     ]
     return web.Application(

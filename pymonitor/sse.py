@@ -40,16 +40,35 @@ class DataSource:
     async def __anext__(self):
         self.current_iteration += 1
         if self.current_iteration <= self.max_iterations or self.forever:
-            message = psutil.cpu_percent(percpu=True)
-            await asyncio.sleep(1)
-            return json.dumps(message)
-
+            yielded = await self.loop()
+            return yielded
         raise StopAsyncIteration
+
+    async def loop(self):
+        raise NotImplementedError
+
+
+class SSEDataSource(DataSource):
+
+    async def loop(self):
+        message = psutil.cpu_percent(percpu=True)
+        await asyncio.sleep(1)
+        return json.dumps(message)
+
+
+class DiskDataSource(DataSource):
+
+    async def loop(self):
+        partitions = [p.mountpoint for p in psutil.disk_partitions()]
+        percents = {p: psutil.disk_usage(p).percent for p in partitions}
+        await asyncio.sleep(1)
+        return json.dumps(percents)
 
 
 class AsyncioSSEHandler(RequestHandler):
 
-    def initialize(self):
+    def initialize(self, datasource):
+        self.datasource = datasource
         self.set_header('Content-Type', 'text/event-stream')
         self.set_header('Cache-Control', 'no-cache/no-store')
 
@@ -58,6 +77,6 @@ class AsyncioSSEHandler(RequestHandler):
         self.flush()
 
     async def get(self, *args, **kwargs):
-        datasource = DataSource(forever=True)
+        datasource = self.datasource(forever=True)
         async for data in datasource:
             await self.publish(SSEResponse(data))
