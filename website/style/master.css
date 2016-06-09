@@ -1,16 +1,16 @@
-#cpu-div {
+.bars {
   height: 20vh;
   width: 30%;
   display: inline-block;
 }
 
-#cpu-div meter {
+meter {
   width: 90%;
   height: 25%;
   margin-bottom: 15px;
 }
 
-#cpu-div meter::-webkit-meter-optimum-value {
+meter::-webkit-meter-optimum-value {
   background-image: repeating-linear-gradient(
     45deg,
     #D91E18,
@@ -20,13 +20,13 @@
   );
 }
 
-#cpu-div meter::-webkit-meter-bar {
+meter::-webkit-meter-bar {
   background: none;
   background-color: whiteSmoke;
   box-shadow: 0 5px 5px -5px #333 inset;
 }
 
-#cpu-div p {
+p {
   display: inline;
   margin-bottom: 10px;
 }
